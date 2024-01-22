@@ -19,7 +19,7 @@ Options:
   -i, --invert
     Invert color
   -d, --delay
-    Delay between chunks
+    Delay between chunks in seconds
   -e, --error-correction-level
     Error correction level
   -m, --max-size
