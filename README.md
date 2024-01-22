@@ -32,6 +32,8 @@ Options:
 
 Hop on over to the releases tab and find an executable for your system. You should be able to run it in your terminal without issue
 
+[releases](https://github.com/JakeTrock/catOutta/releases/tag/alpha)
+
 # Want a new arch added?
 
 Make an issue and I'll add it!
