@@ -105,6 +105,7 @@ func main() {
 
 	var maxsize int
 	var eclevel qrencode.ECLevel
+	var fname string
 
 	if opts.MaxSize > 0 {
 		maxsize = opts.MaxSize
@@ -118,11 +119,38 @@ func main() {
 		eclevel = qrencode.ECLevelM
 	}
 
+	if opts.File != "" {
+		fname = opts.File
+	} else {
+		fname = "catOuttaFile"
+	}
+
 	// Split the text into chunks if it is larger than a QR code can fit
 	chunks := splitTextIntoChunks(text, maxsize)
 
 	fmt.Println("=========(Total Chunks(size ", maxsize, " / ", len(chunks), "))=========")
 	fmt.Println("+++++++++[Error Correction Level: ", eclevel, "]+++++++++")
+
+	da1, err := tty.GetDeviceAttributes1(os.Stdout)
+
+	if err != nil {
+		pErr("failed to get device attributes: %v\n", err)
+		ret = 1
+		return
+	}
+
+	// print the init code
+
+	initCode := fmt.Sprintf("catOutta!-{'length':%d,'filename':'%s'}", len(chunks), fname)
+
+	grid, err := qrencode.Encode(initCode, eclevel)
+
+	if err == nil && da1[tty.DA1_SIXEL] {
+		qrc.PrintSixel(os.Stdout, grid, opts.Inverse)
+	} else {
+		stdout := colorable.NewColorableStdout()
+		qrc.PrintAA(stdout, grid, opts.Inverse)
+	}
 
 	for index, chunk := range chunks {
 		//sleep for 1 second
@@ -141,7 +169,6 @@ func main() {
 			return
 		}
 
-		da1, err := tty.GetDeviceAttributes1(os.Stdout)
 		if err == nil && da1[tty.DA1_SIXEL] {
 			qrc.PrintSixel(os.Stdout, grid, opts.Inverse)
 		} else {

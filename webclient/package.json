@@ -1,0 +1,21 @@
+{
+  "name": "catoutta",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@yudiel/react-qr-scanner": "^1.2.6",
+    "native-file-system-adapter": "^3.0.0",
+    "preact": "^10.19.3"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.7.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  }
+}

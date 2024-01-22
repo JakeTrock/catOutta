@@ -1,0 +1,2 @@
+- test QR scanner
+- add out-of-order scanning by prepending chunk posision to the QR code
