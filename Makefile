@@ -8,6 +8,9 @@ get:
 build:
 	$(GO) build cmd/catoutta/catoutta.go
 
+clean:
+	rm catoutta
+
 makeall:
 	rm -rf bin/*
 
