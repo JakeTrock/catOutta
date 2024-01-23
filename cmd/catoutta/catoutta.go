@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"os"
@@ -14,7 +15,7 @@ import (
 	qrc "github.com/jaketrock/catoutta/lib"
 )
 
-const MAX_DATA_SIZE = 256
+const MAX_DATA_SIZE = 64 // max size in characters
 
 type cmdOptions struct {
 	Help                 bool   `short:"h" long:"help" description:"show this help message"`
@@ -26,7 +27,7 @@ type cmdOptions struct {
 }
 
 func showHelp() {
-	const v = `Usage: qrc [OPTIONS] [TEXT]
+	const v = `Usage: catoutta [OPTIONS] [TEXT]
 
 Options:
   -h, --help
@@ -34,11 +35,11 @@ Options:
   -i, --invert
     Invert color
   -d, --delay
-    Delay between chunks
+    Delay between chunks(seconds)
   -e, --error-correction-level
     Error correction level
   -m, --max-size
-    Max size of chunk
+    Max size of chunk in characters(can shrink qr if your screen is too small)
   -f, --file
     File to read from
 
@@ -74,10 +75,21 @@ func main() {
 		return
 	}
 
+	if opts.ErrorCorrectionLevel > 4 || opts.ErrorCorrectionLevel < 0 {
+		pErr("Error Correction Level must be between 0 and 4\n")
+		ret = 1
+		return
+	}
+
 	var text string
-	if len(args) == 1 {
+	var simpleMode bool
+	if len(args) == 0 && opts.File == "" {
+		showHelp()
+	} else if len(args) == 1 {
 		text = args[0]
+		simpleMode = true
 	} else if opts.File != "" {
+		simpleMode = false
 		file, err := os.Open(opts.File)
 		if err != nil {
 			pErr("failed to open file: %v\n", err)
@@ -92,15 +104,16 @@ func main() {
 			ret = 1
 			return
 		}
-		text = string(textBytes)
+		text = base64.StdEncoding.EncodeToString(textBytes)
 	} else {
+		simpleMode = false
 		textBytes, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			pErr("read from stdin failed: %v\n", err)
 			ret = 1
 			return
 		}
-		text = string(textBytes)
+		text = base64.StdEncoding.EncodeToString(textBytes)
 	}
 
 	var maxsize int
@@ -139,17 +152,19 @@ func main() {
 		return
 	}
 
-	// print the init code
+	// print the init code if it's not just a basic url qr
 
-	initCode := fmt.Sprintf("catOutta!-{'length':%d,'filename':'%s'}", len(chunks), fname)
+	if !simpleMode {
+		initCode := fmt.Sprintf("catOutta!-{\"length\":%d,\"filename\":\"%s\"}", len(chunks), fname)
 
-	grid, err := qrencode.Encode(initCode, eclevel)
+		grid, err := qrencode.Encode(initCode, eclevel)
 
-	if err == nil && da1[tty.DA1_SIXEL] {
-		qrc.PrintSixel(os.Stdout, grid, opts.Inverse)
-	} else {
-		stdout := colorable.NewColorableStdout()
-		qrc.PrintAA(stdout, grid, opts.Inverse)
+		if err == nil && da1[tty.DA1_SIXEL] {
+			qrc.PrintSixel(os.Stdout, grid, opts.Inverse)
+		} else {
+			stdout := colorable.NewColorableStdout()
+			qrc.PrintAA(stdout, grid, opts.Inverse)
+		}
 	}
 
 	for index, chunk := range chunks {
@@ -185,7 +200,9 @@ func splitTextIntoChunks(text string, chunkSize int) []string {
 		if end > len(text) {
 			end = len(text)
 		}
-		chunks = append(chunks, text[i:end])
+		chunks = append(chunks, fmt.Sprintf("{\"i\":%d,\"d\":\"%s\"}", i, text[i:end]))
 	}
+	finalChunk := fmt.Sprintf("CATOUTTAEND")
+	chunks = append(chunks, finalChunk)
 	return chunks
 }
