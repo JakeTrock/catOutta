@@ -85,6 +85,7 @@ func main() {
 	var simpleMode bool
 	if len(args) == 0 && opts.File == "" {
 		showHelp()
+		return
 	} else if len(args) == 1 {
 		text = args[0]
 		simpleMode = true
