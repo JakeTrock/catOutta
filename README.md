@@ -8,6 +8,14 @@
 What is CatOutta?
 have you ever had an old computer you only had keyboard and monitor access to? fear not! catoutta is here to get your files off!
 
+# Web client
+
+[https://jake.trock.com/programs/catOutta/](https://jake.trock.com/programs/catOutta/)
+
+# How does it work?
+
+you can use catoutta to encode a file into a qr code, then you can use your phone/pc w/ webcam to scan the qr code(s) and get the file back!
+
 # How to use
 
 ```
@@ -43,3 +51,8 @@ I'd rather you do it as a pull request..
 # is there an issue?
 
 yeah I bet I made this in a pinch lol
+
+# more cool stuff?
+
+[https://paracordchat.com](https://paracordchat.com)
+[https://geocrypt.me](https://geocrypt.me)

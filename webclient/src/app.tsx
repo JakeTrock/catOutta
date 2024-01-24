@@ -126,6 +126,21 @@ export function App() {
       >
         It's all here!
       </a>
+      <p class="read-the-docs">Want more file movey goodness?</p>
+      <a
+        class="vite-link"
+        href="https://paracordchat.com"
+        target="_blank"
+      >
+        Try paracord!
+      </a>
+      <a
+        class="vite-link"
+        href="https://geocrypt.me"
+        target="_blank"
+      >
+        Or geocrypt
+      </a>
     </>
   );
 }
