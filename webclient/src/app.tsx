@@ -17,11 +17,15 @@ export function App() {
   const resetScanner = () => {
     setShowScanner(false);
     setCount(0);
+    setLength(0);
+    setFilename("");
+    setMessages([]);
+    setChunksTaken([]);
+    setFileHandle(null);
   };
 
   const scanCode = async (code: string) => {
     //init packet template: catOutta!-{'length':%d,'filename':'%s'}
-    console.log(code);
     if (count === 0 && length === 0 && !code.startsWith("catOutta!-")) {
       setMessages(["Please scan the init packet first"]);
     } else if (count === 0 && code.startsWith("catOutta!-")) {
@@ -29,7 +33,7 @@ export function App() {
       setFilename(codeJson.filename);
       setLength(codeJson.length);
       setMessages((m) => [...m, "scanned init packet"]);
-      setChunksTaken(new Array(codeJson.length).fill(false));
+      setChunksTaken(new Array(codeJson.length-1).fill(false));
     } else if(code === "CATOUTTAEND"){
       setMessages((m) => [...m, "scanned end packet"]);
       chunksTaken.forEach((chunk, i) => {
@@ -37,6 +41,10 @@ export function App() {
           setMessages((m) => [...m, `missing chunk ${i}`]);
         }
       });
+      if (count === length) {
+        fileHandle?.close();
+        resetScanner();
+      }
     } else {
       const codeJson = JSON.parse(code);
       if(chunksTaken[codeJson.i]){

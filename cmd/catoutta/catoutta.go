@@ -156,7 +156,7 @@ func main() {
 	// print the init code if it's not just a basic url qr
 
 	if !simpleMode {
-		initCode := fmt.Sprintf("catOutta!-{\"length\":%d,\"filename\":\"%s\"}", len(chunks), fname)
+		initCode := fmt.Sprintf("catOutta!-{\"length\":%d,\"filename\":\"%s\"}", len(chunks)-1, fname)
 
 		grid, err := qrencode.Encode(initCode, eclevel)
 
@@ -176,7 +176,7 @@ func main() {
 			time.Sleep(1 * time.Second)
 		}
 
-		fmt.Println("=========(Chunk", index+1, "of)=========", len(chunks))
+		fmt.Println("=========(Chunk", index+1, "of ", len(chunks), ")=========")
 
 		grid, err := qrencode.Encode(chunk, eclevel)
 		if err != nil {
@@ -201,7 +201,7 @@ func splitTextIntoChunks(text string, chunkSize int) []string {
 		if end > len(text) {
 			end = len(text)
 		}
-		chunks = append(chunks, fmt.Sprintf("{\"i\":%d,\"d\":\"%s\"}", i, text[i:end]))
+		chunks = append(chunks, fmt.Sprintf("{\"i\":%d,\"d\":\"%s\"}", i/chunkSize, text[i:end]))
 	}
 	finalChunk := fmt.Sprintf("CATOUTTAEND")
 	chunks = append(chunks, finalChunk)
