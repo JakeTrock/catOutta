@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -201,9 +202,19 @@ func splitTextIntoChunks(text string, chunkSize int) []string {
 		if end > len(text) {
 			end = len(text)
 		}
-		chunks = append(chunks, fmt.Sprintf("{\"i\":%d,\"d\":\"%s\"}", i/chunkSize, text[i:end]))
+		//chunk sha256
+		hasher := sha256.New()
+		_, err := hasher.Write([]byte(text[i:end])) // Convert string to byte slice
+		if err != nil {
+			fmt.Println("Error hashing chunk")
+		}
+		truncatedHash := hasher.Sum(nil)
+		hexDigest := fmt.Sprintf("%x", truncatedHash)[0:5]
+		cstring := fmt.Sprintf("{\"i\":%d,\"d\":\"%s\",\"h\":\"%s\"}", i/chunkSize, text[i:end], hexDigest)
+		fmt.Println(cstring)
+		chunks = append(chunks, cstring)
 	}
-	finalChunk := fmt.Sprintf("CATOUTTAEND")
+	finalChunk := "CATOUTTAEND"
 	chunks = append(chunks, finalChunk)
 	return chunks
 }

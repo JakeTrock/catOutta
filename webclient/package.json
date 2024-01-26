@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@yudiel/react-qr-scanner": "^1.2.6",
+    "@zxing/library": "^0.20.0",
     "native-file-system-adapter": "^3.0.0",
     "preact": "^10.19.3"
   },

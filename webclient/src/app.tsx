@@ -1,10 +1,11 @@
 import { useState } from "preact/hooks";
 import { showSaveFilePicker } from "native-file-system-adapter";
-import { QrScanner } from "@yudiel/react-qr-scanner";
+import { QrScanner } from "./qrscan";
 import "./app.css";
 import { base64ToBytes } from "./base64util";
 
 export function App() {
+  const [useScreenCapture, setUseScreenCapture] = useState(false);
   const [count, setCount] = useState(0);
   const [length, setLength] = useState(0);
   const [filename, setFilename] = useState("");
@@ -52,7 +53,18 @@ export function App() {
         return;
       }
       //base64 from codejson to bytes
-      const fileBts = base64ToBytes(codeJson.d);
+      const fileBts = base64ToBytes(codeJson.d);//TODO: untested
+      const fileHash = codeJson.h;
+      const fileBtsHash = await crypto.subtle.digest('SHA-256', codeJson.d);
+      const fileBtsHashHex = [...new Uint8Array(fileBtsHash)].map(b => b.toString(16).padStart(2, '0')).join('');
+      //verify filebts
+      setMessages((m) => [...m, `${fileHash} -== ${fileBtsHashHex.substring(0,5)}`]);
+
+      if(fileHash !== fileBtsHashHex.substring(0,5)){
+        setMessages((m) => [...m, `packet ${codeJson.i} failed hash verification`]);
+        setMessages((m) => [...m, `${fileBts}`]);
+        return;
+      }
       await fileHandle?.write(fileBts);
       
       setChunksTaken((c) => {
@@ -60,7 +72,7 @@ export function App() {
         return c;
       });
       
-      setCount(count + 1);
+      setCount(c=>c+1);
       setMessages((m) => [...m, `scanned packet ${count}`]);
       if (count === length) {
         fileHandle?.close();
@@ -91,10 +103,12 @@ export function App() {
             please scan the codes on your screen in order, the first is the most
             important
           </p>
-          <QrScanner
-            onDecode={(code) => scanCode(code)}
-            onError={(error) => console.log(error?.message)}
-          />
+            <QrScanner
+              onDecode={(code) => scanCode(code)}
+              onError={(error) => console.log(error?.message)}
+              useScreenCapture={useScreenCapture}
+            />
+         
           count is {count}/{length} for file {filename}
           <div style={{ background: "gray", overflow: "scroll" }}>
             {messages.map((message) => (
@@ -110,12 +124,16 @@ export function App() {
             if (showScanner) {
               resetScanner();
             } else {
-              setShowScanner(true);
+              setShowScanner(true);          
               initFile();
             }
           }}
         >
           {showScanner ? "Stop/reset" : "Start"} scanner
+        </button>
+        <p class="read-the-docs">use screen capture/camera:</p>
+        <button onClick={() => setUseScreenCapture(!useScreenCapture)}>
+          {useScreenCapture ? "Disable" : "Enable"} screen capture
         </button>
       </div>
       <p class="read-the-docs">Curious cat? Need the binary?</p>
